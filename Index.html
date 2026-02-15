@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Animal Face Scanner</title>
+
+<script defer src="https://cdn.jsdelivr.net/npm/face-api.js"></script>
+
+<style>
+body{
+    background:#000;
+    color:#fff;
+    font-family:Arial;
+    text-align:center;
+}
+.page{display:none}
+.active{display:block}
+video{
+    border:2px solid white;
+    border-radius:10px;
+}
+.scanLine{
+    position:absolute;
+    width:320px;
+    height:3px;
+    background:red;
+    animation:scan 2s linear infinite;
+}
+@keyframes scan{
+    0%{transform:translateY(0)}
+    100%{transform:translateY(240px)}
+}
+</style>
+</head>
+
+<body>
+
+<!-- PAGE 1 -->
+<div id="formPage" class="page active">
+<h2>Enter Details</h2>
+<input id="name" placeholder="Your Name"><br><br>
+
+<select id="gender">
+<option>Male</option>
+<option>Female</option>
+</select><br><br>
+
+<button onclick="startCamera()">Start Scan</button>
+</div>
+
+<!-- PAGE 2 -->
+<div id="scanPage" class="page">
+<h2>Scanning Face...</h2>
+<div style="position:relative;display:inline-block">
+<video id="video" width="320" height="240" autoplay muted></video>
+<div class="scanLine"></div>
+</div>
+</div>
+
+<!-- PAGE 3 -->
+<div id="resultPage" class="page">
+<h2 id="resultText"></h2>
+<h1 id="animal"></h1>
+</div>
+
+<script>
+const animals = ["Lion 🦁","Wolf 🐺","Tiger 🐯","Fox 🦊","Eagle 🦅","Panther 🐆"];
+
+function showPage(id){
+    document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+    document.getElementById(id).classList.add("active");
+}
+
+async function startCamera(){
+    showPage("scanPage");
+
+    const video = document.getElementById("video");
+
+    const stream = await navigator.mediaDevices.getUserMedia({video:true});
+    video.srcObject = stream;
+
+    // load face detection model
+    await faceapi.nets.tinyFaceDetector.loadFromUri(
+      "https://justadummycdn.com/models"
+    ).catch(()=>{});
+
+    // simulate scanning delay
+    setTimeout(detectFace,4000);
+}
+
+async function detectFace(){
+    const video = document.getElementById("video");
+
+    // basic detection attempt
+    try{
+        await faceapi.detectAllFaces(video,new faceapi.TinyFaceDetectorOptions());
+    }catch(e){}
+
+    showResult();
+}
+
+function showResult(){
+    showPage("resultPage");
+
+    const name = document.getElementById("name").value || "User";
+
+    // random animal mapping (demo)
+    const animal = animals[Math.floor(Math.random()*animals.length)];
+
+    document.getElementById("resultText").innerText =
+        name + ", your animal match is:";
+    document.getElementById("animal").innerText = animal;
+}
+</script>
+
+</body>
+</html>
